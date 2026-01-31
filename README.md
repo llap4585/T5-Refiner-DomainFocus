@@ -351,6 +351,99 @@ mT5-base मानक मॉडल के साथ प्रारंभिक 
 
 [Demo](#Demo)
 
+---
+<a name="korean"></a>
+## 한국어（기계 번역）
+**T5-Refiner-DomainFocus**는 **사전 학습 단계**의 전략적 최적화를 통해 모델에 내재적인 '의미적 회복탄력성(Semantic Resilience)'을 부여하여, **텍스트 결손을 더욱 견고하게 처리하고 도메인 전문 지식을 주입할 수 있도록 설계되었습니다.**
+
+### 📖 프로젝트 배경
+**의료 기록 디지털화** 과정에서 **OCR(광학 문자 인식)**은 종이 손상, 직인 가려짐 등의 사유로 핵심 용어에 '문자 결손'이 발생하는 경우가 빈번합니다.
+기존의 **T5** 또는 **mT5** 모델(통칭 T5)은 이러한 손상된 텍스트를 처리할 때 두 가지 주요 문제를 겪습니다:
+* 랜덤 마스킹의 한계: 모델이 어근에 기반한 '단어 추측'만 학습하게 되어, 완전한 의료 개념을 진정으로 이해하지 못함.
+* 토큰화 어긋남 문제: 용어의 글자가 유실될 때 토큰라이저가 이를 의미 없는 파편으로 쪼개버려 모델이 의미적 중심을 잃게 됨.
+
+### ✅ 현재 핵심 기능
+본 프로젝트는 복잡한 하드코딩 규칙에 의존하는 대신, 데이터 전처리 프로세스를 최적화하여 모델의 능력을 강화합니다:
+
+* 전문가 사전 가이드 기반의 원자적 마스킹(Atomic Masking):
+사용자 정의 사전에 의존하여 전문 용어(예: 급성 전벽 심근경색)를 분할 불가능한 하나의 단위로 간주하고 마스킹을 강제합니다. 이 방식을 통해 모델이 잔여 글자로 요행을 바라는 것이 아니라, 문맥의 논리에서 답을 찾도록 강제합니다.
+
+* 인위적 설정 강화 학습:
+특정 고난도 용어의 마스킹 확률을 수동으로 높이는 기능을 지원하며(💡 권장 50%-70%, 80% 초과 금지), 동시에 전체 마스킹 비율(20%-25%)을 동기화하여 높일 수 있습니다.
+
+* 문장 부호 자동 회피:
+간섭 요인 유입을 방지합니다.
+
+인위적으로 '극단적 정보 결손' 상황을 조성함으로써, 모델이 최악의 입력 상태에서도 전문적인 의미를 정확하게 복원할 수 있도록 강제합니다.
+
+### ❗️ 학습 시 주의사항
+* 모델 조기 종료 방지: 전처리 이후 T5 모델은 Loss 하락이 느려지거나 국소적인 변동이 발생하는 가짜 정체 현상이 나타날 수 있으며, 이로 인해 시스템이 학습을 잘못 조기 종료할 수 있습니다.
+* 수렴 판단 권장: 학습 시간을 늘리고, 여러 단계에서 Loss가 지속적으로 안정되게 하락하는지를 종합적으로 판단하여 수렴 여부를 결정할 것을 권장합니다. 학습 시간이 부족할 경우 복원 효과가 크게 떨어질 수 있습니다.
+
+### 📊 효과 평가
+mT5-base 표준 모델과의 예비 테스트 비교 결과:
+* 표준 모델 성능: 전문 도메인 어휘 복원율이 60% 이하로 추정되며, 나머지 40%의 복원 결과는 논리가 혼란스러워 실제 업무에 적용하기 어려운 수준입니다.
+* 본 프로젝트 개선 후: 전문 어휘 복원율이 약 85%에 도달했습니다. 나머지 15%의 오차 대부분도 의미가 유사한 어휘로 대체된 것이어서, 텍스트 전체의 가독성과 논리적 일관성이 크게 향상되었습니다.
+
+### ⚠️ 사용 제한
+* 문맥 단편화 제한: 모델이 한 번에 처리할 수 있는 텍스트 길이에 한계가 있고, 각 텍스트 구간 내 마스킹되는 어휘 수가 제한적이어서, 긴 문서를 분할 처리할 때 문맥 정보가 끊겨 구간을 넘나드는 의미를 완벽하게 포착하지 못할 수 있습니다. 일부 문맥을 포함하여 재학습하는 것을 권장합니다.
+* 알고리즘의 한계: T5 모델 자체의 복원은 통계적 확률 알고리즘에 기반하므로, 복잡한 텍스트를 처리할 때 100%의 복원 정확도를 보장하는 것은 불가능합니다.
+* 도메인 의존성: 복원 효과는 사전에 설정된 전문가 사전의 커버리지와 깊이에 크게 의존합니다.
+
+### 🌌 향후 개발 계획
+* 자동 결손 감지:
+토큰라이저의 '이상 파편'을 암시적 신호로 활용합니다. OCR 인식에 심각한 어긋남이 발생했을 때, 모델이 토큰 시퀀스의 이상 변동을 통해 의미 단절 부위를 자동으로 위치 파악할 수 있도록 합니다.
+* 의미 자동 정렬:
+수동으로 연결 지점을 지정할 필요 없이, OCR로 손상된 텍스트에 대해 모델이 엔드 투 엔드(End-to-End) 복구를 수행하도록 구현합니다.
+
+[Demo](#Demo)
+
+---
+<a name="portuguese"></a>
+## Português (Tradução Automática)
+**T5-Refiner-DomainFocus** visa, através da otimização estratégica na **fase de pré-treinamento**, conferir ao modelo uma "resiliência semântica" intrínseca, **permitindo que ele lide de forma mais robusta com a perda de texto e a injeção de conhecimento especializado de domínio.**
+
+### 📖 Contexto do Projeto
+No processamento de **digitalização de arquivos médicos**, o **OCR (Reconhecimento Óptico de Caracteres)** frequentemente apresenta "defeitos de caracteres" em termos essenciais devido a danos no papel, obstrução por carimbos, entre outros motivos.
+Os modelos tradicionais **T5** ou **mT5** (coletivamente chamados de T5) apresentam dois problemas principais ao lidar com esses textos danificados:
+* Limitações do Mascaramento Aleatório: Faz com que o modelo aprenda apenas a "adivinhar palavras" com base em radicais, sem entender verdadeiramente os conceitos médicos completos.
+* Problema de Desalinhamento da Tokenização: Quando um termo perde letras, o tokenizador o fragmenta em pedaços sem sentido, fazendo com que o modelo perca o foco semântico.
+
+### ✅ Principais Funcionalidades Atuais
+Este projeto atualmente não depende de regras complexas de hard-coding, mas sim da otimização do fluxo de pré-processamento de dados para fortalecer a capacidade do modelo:
+
+* Mascaramento Atômico Guiado por Glossário Especializado:
+Baseando-se em um glossário personalizado, o modelo é forçado a tratar termos técnicos (ex: Infarto Agudo do Miocárdio de Parede Anterior) como um todo indivisível ao realizar o mascaramento. Dessa forma, obriga-se o modelo a buscar respostas na lógica do contexto, em vez de tentar a sorte com caracteres residuais.
+
+* Treinamento Reforçado por Configuração Manual:
+Suporta o aumento manual da probabilidade de mascaramento para termos específicos de alta dificuldade (💡 recomendado entre 50%-70%, não deve exceder 80%), permitindo também o aumento simultâneo da taxa de mascaramento global (20%-25%).
+
+* Evasão Automática de Pontuação:
+Evita a introdução de interferências.
+
+Ao criar artificialmente cenários de "perda extrema de informação", o modelo é forçado a manter uma restauração precisa da semântica profissional mesmo nas piores condições de entrada.
+
+### ❗️ Observações de Treinamento
+* Prevenção de Parada Precoce: Após o pré-processamento, o modelo T5 pode apresentar uma queda lenta na Loss ou flutuações locais ilusórias, levando o sistema a interromper o treinamento prematuramente por erro.
+* Sugestão de Julgamento de Convergência: Recomenda-se aumentar o tempo de treinamento e julgar a convergência do modelo de forma abrangente, baseando-se na estabilidade da queda da Loss em múltiplas etapas. Se o tempo de treinamento for insuficiente, o efeito de restauração pode ser drasticamente reduzido.
+
+### 📊 Avaliação de Resultados
+De acordo com testes comparativos preliminares no modelo padrão mT5-base:
+* Desempenho do Modelo Padrão: A taxa de restauração de vocabulário especializado é estimada em menos de 60%, com os 40% restantes apresentando resultados logicamente confusos, sendo quase inaceitáveis para o negócio.
+* Após Melhorias Deste Projeto: A taxa de restauração de vocabulário especializado atingiu estimadamente 85%. Nos 15% de erro restantes, a maioria são substituições por termos semanticamente próximos, melhorando significativamente a legibilidade geral e a coerência lógica do texto.
+
+### ⚠️ Limitações de Uso
+* Restrição de Fragmentação de Contexto: Devido ao limite de extensão de texto processado por vez e ao número limitado de termos mascarados em cada segmento, documentos longos podem sofrer quebras de informação contextual durante o corte, impedindo a captura perfeita de semânticas que cruzam parágrafos. Recomenda-se reenviar parte do contexto para re-treinamento.
+* Limitações do Algoritmo: Como a restauração do próprio modelo T5 é baseada em algoritmos de probabilidade estatística, é impossível garantir 100% de precisão na restauração de textos complexos.
+* Dependência de Domínio: O efeito de restauração depende altamente da abrangência e profundidade do glossário especializado predefinido.
+
+### 🌌 Plano de Desenvolvimento Futuro
+* Percepção Automática de Defeitos:
+Utilizar "fragmentos anômalos" do tokenizador como sinais implícitos. Quando o reconhecimento de OCR apresentar desalinhamentos graves, o modelo poderá localizar automaticamente a quebra semântica através das flutuações anormais na sequência de tokens.
+* Alinhamento Semântico Automático:
+Realizar a reparação ponta a ponta de textos danificados por OCR sem a necessidade de especificar manualmente os pontos de conexão.
+
+[Demo](#Demo)
 
 ---
 <a name="Demo"></a>
