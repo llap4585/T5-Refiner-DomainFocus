@@ -626,4 +626,4 @@ If you use this project, please cite it as:
 
 
 ---
-> **⚠️Disclaimer:** The non-English and non-Chinese versions of this documentation are provided for convenience only and were generated using machine translation. In case of any discrepancy, the Chinese version shall prevail.
+> **⚠️Disclaimer:** The non-English and non-Chinese versions of this documentation are provided for convenience only and were generated using machine translation. README may have been revised multiple times, and non-Chinese content may be missing. In case of any discrepancy, the Chinese version shall prevail. 
