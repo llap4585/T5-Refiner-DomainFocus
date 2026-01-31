@@ -258,6 +258,101 @@ Réaliser une réparation de bout en bout des textes endommagés par l'OCR sans 
 [Demo](#Demo)
 
 ---
+<a name="espanol"></a>
+## Español (Traducción Automática)
+**T5-Refiner-DomainFocus** está diseñado para dotar al modelo de una "resiliencia semántica" intrínseca mediante la optimización estratégica de la **fase de preentrenamiento**, **permitiéndole manejar de manera más robusta la pérdida de texto e inyectar conocimientos especializados del dominio.**
+
+### 📖 Antecedentes del Proyecto
+Al procesar la **digitalización de archivos médicos**, el **OCR (Reconocimiento Óptico de Caracteres)** suele presentar "defectos de caracteres" en términos clave debido a daños en el papel, obstrucción por sellos, entre otros motivos.
+Los modelos tradicionales **T5** o **mT5** (colectivamente T5) presentan dos problemas principales al manejar estos textos dañados:
+* Limitaciones del enmascaramiento aleatorio: El modelo solo aprende a "adivinar palabras" basándose en raíces léxicas, sin comprender realmente los conceptos médicos completos.
+* Problemas de desalineación de la tokenización: Cuando un término pierde letras, el tokenizador lo fragmenta en pedazos sin sentido, lo que hace que el modelo pierda el centro de gravedad semántico.
+
+### ✅ Funciones Principales Actuales
+Este proyecto no depende actualmente de reglas complejas codificadas a mano, sino que mejora las capacidades del modelo optimizando el flujo de preprocesamiento de datos:
+
+* Enmascaramiento Atómico guiado por léxico experto:
+Basándose en un léxico personalizado, se obliga al modelo a considerar los términos técnicos (ej. infarto agudo de miocardio de la pared anterior) como un todo indivisible al enmascararlos. De esta forma, se fuerza al modelo a buscar respuestas en la lógica del contexto, en lugar de especular a través de caracteres residuales.
+
+* Entrenamiento Reforzado mediante configuración manual:
+Permite aumentar manualmente la probabilidad de enmascaramiento de términos específicos de alta dificultad (💡 recomendado entre 50%-70%, no debe superar el 80%), pudiendo aumentar simultáneamente la tasa de enmascaramiento general (20%-25%).
+
+* Evasión Automática de signos de puntuación:
+Previene la introducción de interferencias.
+
+Al crear artificialmente escenarios de "pérdida extrema de información", se obliga al modelo a mantener una restauración precisa de la semántica profesional incluso en las peores condiciones de entrada.
+
+### ❗️ Notas sobre el Entrenamiento
+* Prevenir la parada temprana del modelo: Tras el preprocesamiento, el modelo T5 puede mostrar una caída lenta de la pérdida (Loss) o fluctuaciones locales, lo que podría llevar al sistema a detener el entrenamiento prematuramente por error.
+* Sugerencia para juzgar la convergencia: Se recomienda aumentar la duración del entrenamiento y juzgar la convergencia del modelo basándose en si la pérdida disminuye de forma estable y continua a través de múltiples etapas. Si el tiempo de entrenamiento es insuficiente, el efecto de restauración podría verse seriamente afectado.
+
+### 📊 Evaluación de Resultados
+Según las comparaciones de pruebas preliminares en el modelo estándar mT5-base:
+* Rendimiento del modelo estándar: La tasa de restauración de vocabulario profesional se estima por debajo del 60%, y el 40% restante de los resultados carece de coherencia lógica, siendo casi inaceptable para el uso empresarial.
+* Tras las mejoras de este proyecto: La tasa de restauración de vocabulario profesional estimada alcanzó el 85%. En el 15% de error restante, la mayoría son sustituciones por sinónimos cercanos, lo que mejora enormemente la legibilidad general y la coherencia lógica del texto.
+
+### ⚠️ Limitaciones de Uso
+* Limitación por fragmentación de contexto: Debido a que la longitud de texto que el modelo procesa por vez es limitada, y el número de palabras enmascaradas (Mask) dentro de cada fragmento también lo está, los documentos largos pueden sufrir rupturas de información contextual al ser segmentados, lo que impide capturar perfectamente la semántica entre párrafos. Se recomienda reintroducir parte del contexto para el reentrenamiento.
+* Limitaciones del algoritmo: Dado que la restauración del modelo T5 se basa en algoritmos de probabilidad estadística, es imposible garantizar una precisión de restauración del 100% al tratar textos complejos.
+* Dependencia del dominio: El efecto de restauración depende altamente de la cobertura y profundidad del léxico experto preestablecido.
+
+### 🌌 Plan de Desarrollo Futuro
+* Percepción Automática de Defectos:
+Utilizar los "fragmentos anómalos" del tokenizador como señales implícitas. Cuando el OCR presenta una desalineación grave, el modelo podrá localizar automáticamente la ruptura semántica a través de las fluctuaciones anormales en la secuencia de tokens.
+* Alineación Semántica Automática:
+Lograr la reparación de extremo a extremo del texto dañado por OCR sin necesidad de especificar manualmente los puntos de unión.
+
+[Demo](#Demo)
+
+---
+<a name="hindi"></a>
+## हिन्दी（मशीन अनुवाद）
+**T5-Refiner-DomainFocus** का उद्देश्य **पूर्व-प्रशिक्षण चरण (pre-training stage)** के रणनीतिक अनुकूलन के माध्यम से मॉडल को एक आंतरिक "सिमेंटिक लचीलापन (Semantic Resilience)" प्रदान करना है, **ताकि यह टेक्स्ट की कमी को अधिक मजबूती से संभाल सके और डोमेन विशेषज्ञता को समाहित कर सके।**
+
+### 📖प्रोजेक्ट की पृष्ठभूमि
+**चिकित्सा अभिलेखागार (medical archives) के डिजिटलीकरण** के दौरान, **OCR (ऑप्टिकल कैरेक्टर रिकग्निशन)** अक्सर कागज की क्षति या स्टैम्प के अवरोध जैसे कारणों से मुख्य शब्दावली में "कैरेक्टर की कमी" पैदा कर देता है।
+पारंपरिक **T5** या **mT5** मॉडल (सामूहिक रूप से T5) इन क्षतिग्रस्त टेक्स्ट को संभालते समय दो मुख्य समस्याओं का सामना करते हैं:
+* यादृच्छिक मास्किंग (Random Masking) की सीमाएँ: मॉडल केवल शब्द की जड़ के आधार पर "शब्द का अनुमान लगाना" सीखता है, जबकि वह पूर्ण चिकित्सा अवधारणाओं को वास्तव में नहीं समझ पाता।
+* टोकनाइज़ेशन मिसअलाइनमेंट की समस्या: जब शब्दावली के अक्षर गायब होते हैं, तो टोकनाइज़र उसे अर्थहीन टुकड़ों में काट देता है, जिससे मॉडल अपना सिमेंटिक केंद्र खो देता है।
+
+### ✅वर्तमान मुख्य विशेषताएं
+यह प्रोजेक्ट वर्तमान में जटिल हार्ड-कोडिंग नियमों पर निर्भर रहने के बजाय, डेटा प्री-प्रोसेसिंग प्रवाह को अनुकूलित करके मॉडल की क्षमता को बढ़ाता है:
+
+* विशेषज्ञ शब्दावली द्वारा निर्देशित परमाणु मास्किंग (Atomic Masking):
+कस्टम शब्दावली के आधार पर, मॉडल को पेशेवर शब्दों (जैसे: तीव्र पूर्वकाल दीवार रोधगलन / Acute anterior wall myocardial infarction) को एक अविभाज्य इकाई के रूप में मास्क करने के लिए मजबूर किया जाता है। इस तरह, मॉडल को शेष अक्षरों से अनुमान लगाने के बजाय संदर्भ के तर्क से उत्तर खोजने के लिए मजबूर किया जाता है।
+
+* मैन्युअल सेटिंग द्वारा सुदृढ़ीकरण प्रशिक्षण:
+विशिष्ट कठिन शब्दों की मास्किंग संभावना को मैन्युअल रूप से बढ़ाने का समर्थन (💡अनुशंसित 50%-70%, 80% से अधिक नहीं), साथ ही कुल मास्किंग दर (20%-25%) को भी बढ़ाया जा सकता है।
+
+* विराम चिह्नों से स्वचालित बचाव:
+हस्तक्षेप को रोकने के लिए।
+
+जानबूझकर "अत्यधिक सूचना कमी" के परिदृश्य बनाकर, मॉडल को सबसे खराब इनपुट स्थितियों में भी पेशेवर अर्थों को सटीक रूप से पुनर्स्थापित करने के लिए मजबूर किया जाता直।
+
+### ❗️प्रशिक्षण के लिए सावधानियां
+* मॉडल को समय से पहले रुकने से रोकना: प्री-प्रोसेसिंग के बाद, T5 मॉडल में लॉस (Loss) के धीरे-धीरे गिरने या स्थानीय उतार-चढ़ाव का भ्रम हो सकता है, जिससे सिस्टम गलती से प्रशिक्षण को जल्दी रोक सकता है।
+* अभिसरण (Convergence) निर्णय का सुझाव: प्रशिक्षण का समय बढ़ाने की सिफारिश की जाती है, और मॉडल के अभिसरण का आकलन इस आधार पर करें कि क्या कई चरणों में लॉस लगातार और स्थिरता से गिर रहा है। यदि प्रशिक्षण का समय अपर्याप्त है, तो बहाली का प्रभाव बहुत कम हो सकता है।
+
+### 📊प्रभाव का मूल्यांकन
+mT5-base मानक मॉडल के साथ प्रारंभिक परीक्षण तुलना के अनुसार:
+* मानक मॉडल का प्रदर्शन: पेशेवर डोमेन शब्दावली बहाली दर 60% से कम होने का अनुमान है, शेष 40% परिणाम तार्किक रूप से भ्रमित हैं और व्यावसायिक उपयोग के लिए लगभग अस्वीकार्य हैं।
+* इस प्रोजेक्ट के सुधार के बाद: पेशेवर शब्दावली बहाली दर का अनुमान 85% तक पहुंच गया है। शेष 15% त्रुटियों में से अधिकांश समान अर्थ वाले शब्दों का प्रतिस्थापन हैं, जिससे टेक्स्ट की समग्र पठनीयता और तार्किक निरंतरता में काफी सुधार हुआ है।
+
+### ⚠️उपयोग की सीमाएं
+* संदर्भ विखंडन (Context Fragmentation) की सीमा: मॉडल द्वारा एक बार में संसाधित टेक्स्ट की लंबाई सीमित होने के कारण, लंबे दस्तावेजों को काटते समय संदर्भ की जानकारी टूट सकती है, जिससे कुछ क्रॉस-पैराग्राफ अर्थ पूरी तरह से कैप्चर नहीं हो पाते। संदर्भ के कुछ हिस्सों को वापस भेजकर पुन: प्रशिक्षित करने की सिफारिश की जाती है।
+* एल्गोरिथम की सीमाएं: चूंकि T5 मॉडल की बहाली सांख्यिकीय संभाव्यता एल्गोरिदम पर आधारित है, इसलिए जटिल टेक्स्ट को संभालते समय 100% सटीकता की गारंटी देना असंभव है।
+* डोमेन निर्भरता: बहाली का प्रभाव पूर्व-निर्धारित विशेषज्ञ शब्दावली के कवरेज और गहराई पर अत्यधिक निर्भर करता है।
+
+### 🌌भविष्य की विकास योजनाएं
+* स्वचालित कमी की पहचान (Automatic Defect Sensing):
+टोकनाइज़र के "असामान्य टुकड़ों" को छिपे हुए संकेतों के रूप में उपयोग करना। जब OCR पहचान में गंभीर विसंगति होती है, तो मॉडल टोकन अनुक्रम के असामान्य उतार-चढ़ाव के माध्यम से स्वचालित रूप से सिमेंटिक ब्रेक का पता लगा सकेगा।
+* स्वचालित सिमेंटिक संरेखण:
+मैन्युअल रूप से कनेक्शन बिंदु निर्दिष्ट किए बिना, OCR क्षतिग्रस्त टेक्स्ट की एंड-टू-एंड मरम्मत प्राप्त करना।
+
+[Demo](#Demo)
+
+
+---
 <a name="Demo"></a>
 ## 📡 Demo
 
