@@ -1,14 +1,17 @@
 Introduction to Other Languages
-One-time machine translation only, provided according to the version as of February 1, 2026
-One-time machine translation only, provided according to the version as of February 1, 2026
 
-([Arabic](#Arabic) العربية, Bengali বাংলা, Russian русский, Italian italiano, Dutch Nederlands, Swedish svenska)
+One-time quick machine translation only, provided according to the version as of February 1, 2026
+
+One-time quick machine translation only, provided according to the version as of February 1, 2026
+
+([Arabic](#Arabic) العربية, [Bengali](#Bengali) বাংলা, [Russian](#Russian) русский, [Italian](#Italian) italiano, [Dutch](#Dutch) Nederlands, [Swedish](#Swedish) svenska)
 
 <div dir="rtl">
 <a name="Arabic"></a>
 ```arabic
 
-اللغة العربية:
+ا
+# للغة العربية:
 
 يهدف **T5-Refiner-DomainFocus** إلى إكساب النموذج ما يمكن تسميته بـ **«المرونة الدلالية»** من خلال تحسين الاستراتيجيات في مرحلة ما قبل التدريب، بحيث يصبح أكثر قدرة على التعامل بثبات مع النصوص المتضررة وإدماج المعرفة التخصصية الخاصة بالمجال.
 
@@ -99,4 +102,327 @@ One-time machine translation only, provided according to the version as of Febru
   استخدام «الشظايا غير الطبيعية» الناتجة عن المُقسِّم كإشارات ضمنية. عند حدوث اختلال شديد في OCR، يمكن للنموذج تحديد مواضع الانقطاع الدلالي تلقائيًا من خلال تذبذبات غير طبيعية في تسلسل الـ tokens.
 - **المحاذاة الدلالية التلقائية:**  
   تحقيق إصلاح شامل لنصوص OCR المتضررة من البداية إلى النهاية دون الحاجة إلى تحديد نقاط الربط يدويًا.
+'''
+---
+<a name='Bengali'></a>
+
+**বাংলা (Bengali):**  
+T5-Refiner-DomainFocus প্রাক-প্রশিক্ষণ পর্যায়ের কৌশলগত অপ্টিমাইজেশনের মাধ্যমে মডেলটিকে একটি অন্তর্নিহিত “সেমান্টিক স্থিতিস্থাপকতা” প্রদান করার লক্ষ্য রাখে, যাতে এটি টেক্সট ক্ষতি এবং ডোমেইন-নির্দিষ্ট জ্ঞান ইনজেকশন আরও স্থিতিশীলভাবে পরিচালনা করতে পারে।
+
+📖 **প্রকল্পের পটভূমি**
+
+চিকিৎসা নথি ডিজিটালাইজেশনের সময়, OCR (অপটিকাল ক্যারেক্টার রিকগনিশন) প্রায়ই কাগজের ক্ষতি, সিল বা স্ট্যাম্পের আচ্ছাদন ইত্যাদি কারণে মূল শব্দগুলিতে “অক্ষর ক্ষতি” ঘটায়। প্রচলিত T5 বা mT5 মডেল (মোটের উপর T5) এই ধরনের ক্ষতিগ্রস্ত টেক্সট প্রক্রিয়াকরণে দুটি মূল সমস্যা তৈরি করে:
+
+1. **র‍্যান্ডম মাস্কিংয়ের সীমাবদ্ধতা:** মডেল কেবল শব্দমূল থেকে “শব্দ অনুমান” শিখে, সম্পূর্ণ চিকিৎসা ধারণা বোঝে না।  
+2. **টোকেন বিভাজনের সমস্যা:** যখন পদটি অক্ষর হারায়, টোকেনাইজার এটি অর্থহীন অংশে ভেঙে ফেলে, ফলে মডেল অর্থগত কেন্দ্র হারায়।
+
+✅ **বর্তমান মূল বৈশিষ্ট্য**
+
+এই প্রকল্পটি জটিল হার্ড-কোডেড নিয়মের উপর নির্ভর করে না, বরং ডেটা প্রি-প্রসেসিং, মাস্কিং কৌশল এবং এক্সিকিউশন ফ্লো অপ্টিমাইজ করে মডেল ক্ষমতা বৃদ্ধি করে:
+
+- **দ্রষ্টব্য:** প্রকল্পটি T5 এর নিজস্ব টোকেনাইজার ব্যবহার করছে।  
+
+1. **দীর্ঘ টেক্সটকে প্যারাগ্রাফ এবং পাংচুয়েশন অনুযায়ী ব্লকে বিভক্ত করা**  
+   - উপন্যাস, ডকুমেন্ট বা প্রফেশনাল কর্পাস থেকে স্বয়ংক্রিয়ভাবে ট্রেনিং স্যাম্পল তৈরি করা হয়, প্যারাগ্রাফ সীমা এবং চাইনিজ/ইংরেজি চিহ্ন অনুযায়ী বিভাজন, পূর্ববর্তী বাক্যকে প্রসঙ্গ প্রিফিক্স হিসেবে রাখা হয়, যা সেমান্টিক ধারাবাহিকতা নিশ্চিত করে এবং স্যাম্পল দৈর্ঘ্য মডেল কনটেক্সট উইন্ডোর সাথে সামঞ্জস্যপূর্ণ করে।  
+
+2. **এক্সপার্ট ভোকাবুলারি দ্বারা গাইডেড এটমিক মাস্কিং**  
+   - কাস্টম ডোমেইন ভোকাবুলারি ব্যবহার করে, পেশাদার পদগুলি (যেমন: Acute anterior myocardial infarction, Percutaneous coronary intervention) একত্রিতভাবে মাস্ক করা হয়, অক্ষর-স্তরের অনুমান পথ বন্ধ করা হয়, মডেলকে প্রসঙ্গ এবং ডোমেইন লজিকের উপর নির্ভর করতে বাধ্য করা হয়।  
+
+3. **ম্যানুয়ালি কন্ট্রোলড রিইনফোর্সড মাস্কিং স্ট্র্যাটেজি**  
+   - জটিল পদগুলির মাস্কিং সম্ভাবনা 50%-70% পর্যন্ত বাড়ানো যায় (80% অতিক্রম করা উচিত নয়), এবং মোট মাস্কিং রেট সমন্বয় করা যায় (~20%-25%), দুর্বল জ্ঞান বিন্দুতে মডেলের রিজনিং ক্ষমতা বৃদ্ধি করতে।  
+
+4. **পাংচুয়েশন এবং নন-সেমান্টিক টোকেন স্বয়ংক্রিয়ভাবে এড়ানো**  
+   - মাস্কিং চলাকালীন চাইনিজ/ইংরেজি চিহ্ন, সিম্বল এবং অজানা টোকেন (<unk>) এড়ানো হয়, প্রতিটি মাস্ক স্প্যান কার্যকর সেমান্টিক ইউনিটের সাথে সংযুক্ত থাকে।  
+
+5. **ক্রমাগত বা ওভারল্যাপিং স্প্যান স্বয়ংক্রিয়ভাবে একত্রিত করা**  
+   - সংলগ্ন বা ওভারল্যাপিং মাস্ক স্প্যান একত্রিত করা হয়, <extra_id_n> ইনপুট/আউটপুটের ক্রম এবং ট্রেনিং সিগন্যাল ধারাবাহিকতা নিশ্চিত করা হয়, সম্পূর্ণরূপে T5-এর স্প্যান করাপশন প্রশিক্ষণ মানদণ্ডের সাথে সামঞ্জস্যপূর্ণ।  
+
+6. **মাল্টি-থ্রেডেড প্যারালাল প্রসেসিং এবং স্বয়ংক্রিয় স্যাম্পল রিটার্ন**  
+   - থ্রেড সংখ্যা সামঞ্জস্য করে স্যাম্পল প্যারালাল তৈরি করা যায়, বৃহৎ কর্পাস প্রক্রিয়াকরণ দক্ষতা বৃদ্ধি পায়; সমস্ত স্যাম্পল স্বয়ংক্রিয়ভাবে মূল ক্রমে রিটার্ন হয়, চূড়ান্ত আউটপুট ট্রেনিং-এর জন্য স্ট্যান্ডার্ডাইজড JSONL ডেটাসেট।  
+
+- প্রসঙ্গ সচেতন ডেটা কনস্ট্রাকশন, কীওয়ার্ড-প্রায়োরিটি মাস্কিং, র্যান্ডম স্প্যান মাস্ক এবং মানুষের দ্বারা তৈরি “চরম তথ্য হ্রাস” পরিস্থিতির মাধ্যমে মডেল সবচেয়ে খারাপ ইনপুটেও পেশাদার সেমান্টিক সঠিকতা বজায় রাখতে সক্ষম।  
+
+**প্রযোজ্য ক্ষেত্র:** চিকিৎসা, আইন, প্রযুক্তি নথি ইত্যাদি যেখানে সঠিক সেমান্টিক বোঝাপড়া প্রয়োজন।  
+
+❗️ **প্রশিক্ষণ সংক্রান্ত সতর্কতা**
+
+- মডেল আগে থেমে যাওয়া প্রতিরোধ: প্রি-প্রসেসিংয়ের পরে T5 মডেলে Loss ধীরে হ্রাস বা স্থানীয় অস্থিরতা দেখা দিতে পারে, যা সিস্টেমকে তাড়াহুড়া করে প্রশিক্ষণ বন্ধ করতে প্ররোচিত করতে পারে।  
+- **কনভার্জেন্স পরামর্শ:** প্রশিক্ষণ সময় বৃদ্ধি করা এবং একাধিক ধাপের Loss ধারাবাহিকভাবে হ্রাস করছে কিনা পর্যবেক্ষণ করা উচিত। পর্যাপ্ত সময় না থাকলে পুনঃউদ্ধার ফলাফল কম হতে পারে।  
+
+📊 **ফলাফল মূল্যায়ন**
+
+- mT5-base স্ট্যান্ডার্ড মডেলে প্রাথমিক পরীক্ষা অনুযায়ী:  
+  - স্ট্যান্ডার্ড মডেল: পেশাদার শব্দের পুনঃউদ্ধার ~60% এর কম, বাকি 40% অরিজিনাল লজিকের সাথে অসঙ্গত।  
+  - এই প্রকল্পের উন্নতির পরে: পেশাদার শব্দ পুনঃউদ্ধার ~85%, বাকি 15%-এর ত্রুটি মূলত অর্থের কাছাকাছি প্রতিস্থাপন।  
+
+⚠️ **ব্যবহারের সীমাবদ্ধতা**
+
+- প্রসঙ্গ ফ্র্যাগমেন্টেশন সীমাবদ্ধতা: মডেল একবারে সীমিত টেক্সট প্রক্রিয়াকরণ করে, দীর্ঘ নথি প্রসেসিংয়ে ক্রস-প্যারাগ্রাফ সেমান্টিক হারানো হতে পারে।  
+- অ্যালগরিদম সীমাবদ্ধতা: T5-এর পুনঃউদ্ধার পরিসংখ্যান-ভিত্তিক, 100% সঠিকতা সম্ভব নয়।  
+- ডোমেইন নির্ভরতা: পুনঃউদ্ধার প্রাক্সিস এক্সপার্ট ভোকাবুলারি কভারেজের উপর নির্ভর করে।  
+
+🌌 **ভবিষ্যৎ পরিকল্পনা**
+
+- স্বয়ংক্রিয় ক্ষতি সচেতনতা: টোকেনাইজারের “অস্বাভাবিক ফ্র্যাগমেন্ট” সিগন্যাল হিসেবে ব্যবহার।  
+- সেমান্টিক স্বয়ংক্রিয় সমন্বয়: OCR ক্ষতিগ্রস্ত টেক্সটের জন্য এন্ড-টু-এন্ড পুনঃস্থাপন, কোনো মানুষের হস্তক্ষেপ ছাড়াই।
+
+---
+<a name='Russian'></a>
+
+# Русский
+
+T5-Refiner-DomainFocus направлен на то, чтобы через оптимизацию стратегии на этапе предварительного обучения придать модели внутреннюю «семантическую устойчивость», позволяя ей более надежно обрабатывать поврежденный текст и внедрять специализированные знания домена.
+
+📖 **Фон проекта**
+
+При цифровизации медицинских архивов OCR (оптическое распознавание символов) часто сталкивается с «повреждением символов» ключевых терминов из-за порванной бумаги, печатей и других факторов. Традиционные модели T5 или mT5 (в совокупности называемые T5) имеют два основных ограничения при обработке таких поврежденных текстов:
+
+1. **Ограничения случайного маскирования**: модель учится «угадывать слова» по корню, не понимая полного медицинского понятия.  
+2. **Проблема разбиения на токены**: при отсутствии букв в термине токенизатор дробит его на бессмысленные фрагменты, теряя семантический центр.
+
+✅ **Текущие основные функции**
+
+Проект не полагается на сложные жестко закодированные правила, а усиливает возможности модели через оптимизацию предобработки данных, стратегий маскирования и процессов выполнения:
+
+- **Внимание**: используется стандартный токенизатор T5.
+
+**Разделение длинных текстов по абзацам и пунктуации для генерации обучающих блоков**  
+Автоматическая генерация примеров из романов, документов или специализированных корпусов с разбиением по границам абзацев и знакам препинания (китайские и английские), при этом конец предыдущего предложения сохраняется как контекстный префикс, обеспечивая семантическую непрерывность и ограничивая длину одного примера для соответствия окну контекста модели.
+
+**Атомарное маскирование с использованием экспертного словаря**  
+С помощью пользовательского доменного словаря профессиональные термины (например: острый передний инфаркт миокарда, черезкожное коронарное вмешательство) маскируются как неделимые единицы, блокируя спекулятивные пути на уровне символов и заставляя модель восстанавливать термин, опираясь на контекст и доменную логику.
+
+**Ручная управляемая стратегия усиленного маскирования**  
+Позволяет вручную повышать вероятность маскирования сложных терминов (💡рекомендуется 50–70%, не выше 80%) и одновременно регулировать общий уровень маскирования (примерно 20–25%), усиливая способность модели делать выводы по слабым знаниям.
+
+**Автоматическое пропускание пунктуации и несемантических токенов**  
+Во время маскирования автоматически пропускаются китайские и английские знаки препинания, символы и неизвестные токены токенизатора (<unk>), обеспечивая, что каждый маскированный фрагмент соответствует значимой семантической единице.
+
+**Автоматическое объединение последовательных и перекрывающихся span**  
+Соседние или перекрывающиеся span масок автоматически объединяются, обеспечивая единообразие последовательности <extra_id_n> входов/выходов и непрерывность сигнала обучения, полностью совместимо с оригинальной схемой span corruption для T5.
+
+**Многопоточная параллельная обработка и автоматическая передача примеров**  
+Поддержка генерации примеров с регулируемым числом потоков, что значительно повышает эффективность обработки больших корпусов; все сгенерированные примеры автоматически передаются и собираются в исходном порядке, результат — стандартизированный JSONL набор данных для тренировки.
+
+Благодаря контекстно-зависимому построению данных, приоритетному маскированию ключевых слов, случайному маскированию span и искусственному созданию «экстремальных условий потери информации», модель сохраняет точное понимание и восстановление профессиональной семантики даже при неблагоприятных входных данных.
+
+**Применение**: медицина, юриспруденция, техническая документация и другие профессиональные корпуса, требующие точного понимания семантики.
+
+❗️ **Замечания по обучению**
+
+- **Предотвращение преждевременной остановки**: после предобработки модель T5 может демонстрировать медленное снижение Loss или локальные колебания, что может привести к ошибочной остановке обучения.  
+- **Рекомендации по сходимости**: рекомендуется увеличить продолжительность обучения и оценивать сходимость на основе устойчивого снижения Loss на нескольких этапах. При недостаточном времени обучения качество восстановления может значительно снизиться.
+
+📊 **Оценка эффективности**
+
+По предварительным тестам на модели mT5-base:
+
+- **Стандартная модель**: восстановление профессиональных терминов оценивается ниже 60%, оставшиеся 40% имеют логически несогласованные результаты.  
+- **После улучшений проекта**: восстановление терминов достигает ~85%. Из оставшихся 15% большая часть — семантически близкие замены, значительно улучшая читаемость текста и логическую связность.
+
+⚠️ **Ограничения**
+
+- **Фрагментация контекста**: из-за ограниченной длины текста, обрабатываемой моделью за один раз, и ограничения количества маскируемых слов в абзаце, в длинных документах возможны разрывы семантики между абзацами. Рекомендуется передавать часть контекста обратно для повторного обучения.  
+- **Ограничения алгоритма**: восстановление T5 основано на статистической вероятностной модели, поэтому 100% точность невозможна при сложных текстах.  
+- **Зависимость от домена**: качество восстановления сильно зависит от объема и глубины экспертного словаря.
+
+🌌 **Планы на будущее**
+
+- **Автоматическое определение повреждений**: использование «аномальных фрагментов» токенизатора как скрытых сигналов. При сильном смещении OCR модель сможет автоматически локализовать семантические разрывы.  
+- **Автоматическое выравнивание семантики**: без ручного указания точек соединения, модель сможет восстанавливать поврежденный текст OCR в режиме end-to-end.
+
+---
+<a name='Italian'></a>
+**Italiano:**  
+T5-Refiner-DomainFocus mira a conferire al modello una “resilienza semantica” intrinseca tramite l’ottimizzazione delle strategie nella fase di pre-addestramento, permettendogli di gestire in modo più robusto testi danneggiati e di integrare conoscenze settoriali specialistiche.
+
+📖 **Contesto del progetto**
+
+Durante la digitalizzazione dei fascicoli medici, l’OCR (Riconoscimento Ottico dei Caratteri) spesso genera “perdita di caratteri” nei termini chiave a causa di danni alla carta, timbri o altri ostacoli. I modelli T5 o mT5 tradizionali (indicati collettivamente come T5) presentano due problemi principali quando trattano questi testi danneggiati:
+
+- **Limiti della mascheratura casuale:** il modello impara a “indovinare le parole” basandosi solo sulle radici, senza comprendere realmente i concetti medici completi.  
+- **Problemi di tokenizzazione:** quando i termini perdono lettere, il tokenizer li frammenta in pezzi privi di significato, facendo perdere al modello il focus semantico.
+
+✅ **Funzionalità principali attuali**
+
+Il progetto attuale non si basa su regole hard-coded complesse, ma migliora le capacità del modello attraverso l’ottimizzazione della pre-elaborazione dei dati, delle strategie di mascheratura e del flusso di esecuzione:
+
+- **Nota:** il progetto utilizza il tokenizer nativo di T5.
+
+1. **Generazione di blocchi di training da testi lunghi suddivisi per paragrafo e punteggiatura**  
+   - Creazione automatica di campioni da romanzi, documenti o corpora specialistici, basata su confini di paragrafo e punteggiatura cinese/inglese, mantenendo le ultime frasi come prefisso contestuale per garantire continuità semantica e limitare la lunghezza dei campioni in linea con la finestra di contesto del modello.
+
+2. **Mascheratura atomica guidata da vocabolari specialistici**  
+   - Utilizzo di dizionari settoriali personalizzati per trattare termini specialistici (es.: infarto acuto della parete anteriore, intervento coronarico percutaneo) come unità indivisibili, bloccando percorsi di guessing a livello di carattere e costringendo il modello a fare affidamento sul contesto semantico e sulla logica del dominio.
+
+3. **Strategia di mascheratura rinforzata controllabile manualmente**  
+   - Possibilità di aumentare manualmente la probabilità di mascheratura per termini complessi (💡 consigliato 50%–70%, non oltre l’80%) e regolare simultaneamente il tasso complessivo di mascheratura (circa 20%–25%), rinforzando le capacità di ragionamento del modello su conoscenze deboli.
+
+4. **Evitamento automatico di punteggiatura e token non semantici**  
+   - Durante la mascheratura, punteggiatura, simboli e caratteri <unk> vengono saltati automaticamente, assicurando che ogni span mascherato corrisponda a unità semantiche valide.
+
+5. **Unione automatica di span consecutivi o sovrapposti**  
+   - Gli span di mascheratura adiacenti o sovrapposti vengono uniti automaticamente, garantendo coerenza nell’ordine input/output <extra_id_n> e continuità del segnale di training, completamente compatibile con le norme di span corruption di T5.
+
+6. **Elaborazione multi-thread e retroazione automatica dei campioni**  
+   - Supporto per generazione parallela con numero di thread configurabile, aumentando l’efficienza con corpora di grandi dimensioni; tutti i campioni generati vengono raccolti e ordinati secondo l’originale per produrre dataset JSONL standard pronti per l’addestramento.
+
+Attraverso costruzione dei dati sensibile al contesto, mascheratura prioritaria di parole chiave, mascheratura casuale di span e scenari artificiali di “perdita estrema di informazioni”, il modello mantiene la capacità di comprendere e ricostruire correttamente la semantica professionale anche nelle condizioni più sfavorevoli.
+
+**Scenari applicativi:** medicina, legge, documentazione tecnica, o qualsiasi corpus specialistico che richieda comprensione semantica precisa.
+
+❗️ **Note per l’addestramento**
+
+- **Evitare l’arresto anticipato:** dopo la pre-elaborazione, T5 può mostrare Loss in lento calo o oscillazioni locali, inducendo arresti prematuri errati.  
+- **Consiglio per la convergenza:** prolungare il training e valutare la stabilità della Loss su più fasi; tempi insufficienti possono ridurre drasticamente l’efficacia della ricostruzione.
+
+📊 **Valutazione dei risultati**
+
+Nei test preliminari con mT5-base:  
+- Modello standard: tasso di recupero dei termini specialistici < 60%, il restante 40% mostra logica confusa.  
+- Con il progetto: tasso di recupero stimato 85%, con il 15% residuo costituito principalmente da sostituzioni semanticamente simili, migliorando notevolmente leggibilità e coerenza logica.
+
+⚠️ **Limitazioni d’uso**
+
+- **Segmentazione contestuale:** lunghezza limitata dei testi e numero di token mascherati per segmento possono causare perdita di contesto in documenti lunghi.  
+- **Limiti algoritmici:** il recupero è basato su probabilità statistiche, quindi non garantisce accuratezza al 100%.  
+- **Dipendenza dal dominio:** le prestazioni dipendono dalla copertura e profondità del vocabolario specialistico.
+
+🌌 **Piani futuri**
+
+- **Rilevamento automatico di danni:** sfruttare “token frammentati anomali” per individuare automaticamente rotture semantiche in OCR gravemente distorto.  
+- **Allineamento semantico automatico:** ripristino end-to-end dei testi danneggiati senza intervento umano sui punti di giunzione.
+
+---
+
+<a name='Dutch'></a>
+
+**Nederlands (Dutch):**  
+T5-Refiner-DomainFocus is ontworpen om het model via strategieoptimalisatie tijdens de pre-trainingsfase een intrinsieke "semantische veerkracht" te geven, zodat het robuuster kan omgaan met tekstdelen die ontbreken en domeinspecifieke kennis kan integreren.
+
+📖 **Projectachtergrond**
+
+Bij de digitalisering van medische dossiers veroorzaakt OCR (Optical Character Recognition) vaak "tekens ontbrekend" in kerntermen door beschadigd papier of door stempels bedekte tekst. Traditionele T5- of mT5-modellen (gezamenlijk T5 genoemd) hebben twee hoofdproblemen bij het verwerken van dergelijke beschadigde tekst:
+
+1. **Beperkingen van willekeurige maskering:** Het model leert slechts te "raden" op basis van woordwortels, zonder echt het volledige medische concept te begrijpen.  
+2. **Tokenisatieverschuiving:** Wanneer een term letters mist, splitst de tokenizer deze in betekenisloze fragmenten, waardoor het model de semantische kern verliest.
+
+✅ **Huidige kernfunctionaliteiten**
+
+Dit project vertrouwt momenteel niet op complexe hard-coded regels, maar versterkt het model door het optimaliseren van datavoorbewerking, maskeringsstrategieën en uitvoeringsprocessen:
+
+- **Opmerking:** dit project gebruikt de T5-tokenizer.  
+
+**Langere teksten opdelen per alinea en interpunctie**  
+Training samples worden per alinea en op basis van Chinese en Engelse interpunctie gesegmenteerd. De laatste zin van de vorige alinea wordt behouden als contextuele prefix, zodat semantische continuïteit gewaarborgd blijft. De lengte van elke sample wordt beperkt om in het contextvenster van het model te passen.
+
+**Atomische maskering geleid door expertwoordenboek**  
+Met een aangepast domeinwoordenboek worden gespecialiseerde termen (bijv. "Acute Anterior Myocardial Infarction", "Percutane Coronaire Interventie") als onverdeeld geheel gemaskeerd, zodat het model gedwongen wordt semantiek en domeinlogica te gebruiken voor reconstructie.
+
+**Handmatig controleerbare versterkte maskering**  
+Ondersteunt het handmatig verhogen van de maskeringskans voor moeilijke termen (💡 aanbevolen 50–70%, niet hoger dan 80%) en het aanpassen van de totale maskeringsratio (ongeveer 20–25%), om de redeneercapaciteit van het model op zwakke kennispunten te versterken.
+
+**Automatische uitsluiting van interpunctie en niet-semantische tokens**  
+Tijdens maskering worden Chinese en Engelse interpuncties, symbolen en onbekende tokenizer-tekens (<unk>) automatisch overgeslagen, zodat elk mask span overeenkomt met een geldig semantisch eenheid.
+
+**Automatische samenvoeging van opeenvolgende of overlappende spans**  
+Aangrenzende of overlappende mask spans worden automatisch samengevoegd om <extra_id_n> input/output-paren consistent en semantisch continu te houden, volledig compatibel met de T5 span-corruption trainingnormen.
+
+**Multithreading en automatische sample terugvoer**  
+Ondersteunt parallel samplegeneratie met configureerbare threads, waardoor de verwerking van grootschalige corpora aanzienlijk versnelt. Alle samples worden automatisch teruggevoerd en in originele volgorde samengevoegd tot een standaard JSONL-dataset voor training.
+
+Door contextbewuste dataconstructie, sleutelwoord-prioritaire maskering, willekeurige span-masks en kunstmatig gecreëerde "extreme informatietekort"-scenario's behoudt het model zelfs onder nadelige inputcondities een nauwkeurig begrip en reconstructie van professionele semantiek.
+
+**Toepassingsgebieden:** medische, juridische, technische documenten en andere professionele corpora die precieze semantische interpretatie vereisen.
+
+❗️ **Trainingsaanwijzingen**
+
+- **Voorkom vroegtijdige stopzetting:** na preprocessing kan T5 een trage daling van Loss of lokale fluctuaties vertonen, waardoor het systeem ten onrechte stopt.  
+- **Convergentiecontrole:** verleng de trainingstijd en beoordeel convergence op basis van continue daling van Loss over meerdere fasen. Onvoldoende training vermindert reconstructiekwaliteit.
+
+📊 **Effectevaluatie**
+
+- **Standaard mT5-base:** schatting van correcte reconstructie van vaktermen < 60%, rest 40% is semantisch incoherent.  
+- **Na projectverbetering:** reconstructie van vaktermen ~85%, met resterende 15% vaak semantisch vergelijkbare termen, wat leesbaarheid en logische samenhang sterk verbetert.
+
+⚠️ **Beperkingen**
+
+- **Contextfragmentatie:** beperkte tekstlengte per sessie en aantal gemaskeerde tokens per segment kunnen leiden tot semantische breuken bij lange documenten. Terugvoer van context wordt aanbevolen.  
+- **Algoritmische beperkingen:** reconstructie is probabilistisch, 100% nauwkeurigheid is niet gegarandeerd.  
+- **Domeinafhankelijkheid:** reconstructiekwaliteit hangt sterk af van dekking en diepte van het expertwoordenboek.
+
+🌌 **Toekomstige ontwikkelingsplannen**
+
+- **Automatisch defectbewustzijn:** detecteert semantische breuken via abnormale tokenizer-fragmenten bij ernstige OCR-fouten.  
+- **Semantische automatische uitlijning:** end-to-end herstel van beschadigde OCR-tekst zonder handmatige aanwijzingen.
+
+---
+<a name='Swedish'></a>
+
+## Svenska:
+
+T5-Refiner-DomainFocus syftar till att genom strategisk optimering under förträningsfasen ge modellen en inneboende "semantisk resiliens", vilket gör att den kan hantera textförluster mer robust och införa domänspecifik expertkunskap.
+
+📖 **Projektbakgrund**
+
+Vid digitalisering av medicinska journaler orsakar OCR (optisk teckenigenkänning) ofta "teckenförluster" för centrala termer på grund av skadade dokument eller stämplar. Traditionella T5- eller mT5-modeller (gemensamt kallade T5) har två huvudsakliga problem när de hanterar sådana skadade texter:
+
+- **Begränsningar med slumpmässig maskering:** Modellen lär sig endast "gissa ord" baserat på ordstammen, utan att verkligen förstå den fullständiga medicinska koncepten.  
+- **Tokeniseringsförskjutning:** När bokstäver saknas i termer delar tokeniseraren upp dem i meningslösa fragment, vilket leder till att modellen förlorar den semantiska kärnan.
+
+✅ **Nuvarande kärnfunktioner**
+
+Projektet förlitar sig för närvarande inte på komplexa hårdkodade regler, utan stärker modellens kapacitet genom att optimera datapreprocessing, maskeringsstrategier och exekveringsflöden:
+
+- **Observera:** Projektet använder T5:s inbyggda tokenizer.
+
+**Segmentering av lång text i träningsblock**
+- Lång text delas upp i stycken och efter skiljetecken för att skapa träningsprov.  
+- Prov genereras automatiskt från romaner, dokument eller domänspecifik korpus baserat på styckegränser och interpunktion på både kinesiska och engelska.  
+- Tidigare mening i stycket används som kontextprefix för att säkerställa semantisk kontinuitet och mildra tvärstycke-sematiska avbrott. Längden på varje prov begränsas för att passa modellens kontextfönster.
+
+**Atomiserad maskering med expertordlista**
+- Använder en anpassad domänordlista där professionella termer (t.ex. "akut anterior myokardinfarkt", "perkutan koronar intervention") maskeras som odelbara enheter.  
+- Förhindrar teckenbaserade spekulativa gissningar och tvingar modellen att förlita sig på kontextuell semantik och domänlogik.
+
+**Manuellt styrd förstärkt maskeringsstrategi**
+- Möjliggör manuell ökning av maskeringssannolikhet för svåra termer (💡 rekommenderat 50–70%, ej över 80%)  
+- Samtidigt justering av total maskeringsgrad (~20–25%) för riktad förstärkning av modellens resoneringsförmåga på svaga kunskapspunkter.
+
+**Automatisk undvikning av skiljetecken och icke-semantiska tokens**
+- Under maskering ignoreras automatiskt skiljetecken, symboler och okända tecken (<unk>), vilket säkerställer att varje maskspan motsvarar en giltig semantisk enhet.
+
+**Automatisk sammanslagning av kontinuerliga eller överlappande spans**
+- Närliggande eller överlappande maskeringsspan slås samman automatiskt, vilket säkerställer konsekvent ordning på <extra_id_n> in-/utdata och kontinuerlig träningssignal, helt kompatibelt med T5:s ursprungliga span corruption-träningsspecifikation.
+
+**Multitrådad parallell bearbetning och automatisk återföring av prov**
+- Stöder justerbart antal trådar för parallell provgenerering, vilket kraftigt förbättrar effektiviteten vid hantering av stora korpusar.  
+- Alla genererade prov återförs automatiskt och sammanställs i ursprunglig ordning, slutligen output som standardiserad JSONL för träning.
+
+Genom kontextmedveten datakonstruktion, nyckelordsprioriterad maskering, slumpmässig span-maskering och artificiellt skapade "extrema informationsförluster" kan modellen fortfarande exakt förstå och återställa professionell semantik under ogynnsamma ingångsförhållanden.
+
+**Användningsområden:** Medicin, juridik, tekniska dokument och annan professionell korpus som kräver exakt semantisk förståelse.
+
+❗️ **Träningsanvisningar**
+
+- **Förebygg tidig stoppning:** Efter förbehandling kan T5 visa långsam minskning av Loss eller lokala variationer, vilket kan leda till felaktig tidig avstängning av träning.  
+- **Rekommendation för konvergensbedömning:** Öka träningstiden och bedöm konvergens baserat på stabil nedgång av Loss över flera faser. Otillräcklig träning kan kraftigt försämra återställningseffekten.
+
+📊 **Effektbedömning**
+
+- **Standardmodell:** Återställningsgraden för professionella termer uppskattas under 60%, resterande 40% logiskt oacceptabla.  
+- **Efter förbättringar:** Återställningsgraden för professionella termer når ~85%, med resterande 15% huvudsakligen semantiskt närliggande ersättningar, vilket förbättrar textens läsbarhet och logiska koherens.
+
+⚠️ **Begränsningar**
+
+- **Kontextfragmentering:** Begränsad textlängd per modellkörning och begränsat antal masker per stycke kan leda till att tvärstycke-semantik inte fångas fullt ut. Rekommenderas att återföra delvis kontext för träning.  
+- **Algoritmlimitering:** T5 återställer baserat på sannolikhetsalgoritmer, vilket inte garanterar 100% korrekt återställning av komplex text.  
+- **Domänberoende:** Återställningseffekten beror starkt på omfattning och djup av fördefinierad expertordlista.
+
+🌌 **Framtida utvecklingsplaner**
+
+- **Automatisk felupptäckt:** Använder "anomal fragment" från tokeniseraren som implicit signal för att identifiera semantiska brott vid OCR-fel.  
+- **Automatisk semantisk justering:** Ingen manuell angivelse av sammanlänkning krävs; modellen kan utföra end-to-end reparation av OCR-skadad text.
+
+---
 
