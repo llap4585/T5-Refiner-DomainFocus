@@ -588,9 +588,11 @@ Realizar a reparação ponta a ponta de textos danificados por OCR sem a necessi
 ---
 <a name="Prerequisites"></a>
 
-[Requirements](#Requirements)
 
 ## Prerequisites
+
+# [Requirements](#Requirements)
+
 > **English:**
 >If you are not familiar with Transformer models and pretraining mechanisms, it is recommended to study the following topics first:  
 >1. **T5 Model**: A Transformer-based text generation model, useful for text repair, translation, summarization, and other NLP tasks.  
