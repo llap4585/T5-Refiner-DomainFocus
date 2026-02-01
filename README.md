@@ -12,7 +12,7 @@
 [日本語](#japanese) | [Deutsch](#deutsch) | [Français](#francais) | [Español](#espanol) | [हिन्दी](#hindi) | [한국어](#korean) | [Português](#portuguese)
 
 
-# Introduction to Other Languages 
+### Introduction to Other Languages 
 
 — **one-time *quick* machine translation only**, provided according to the version as of February 1, 2026:
 
