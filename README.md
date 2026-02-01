@@ -16,7 +16,7 @@ Introduction to Other Languages — **one-time machine translation only**, provi
 
 Arabic العربية, Bengali বাংলা, Russian русский, Italian italiano, Dutch Nederlands, Swedish svenska
 
-[Introduction to Other Languages](./Introduction-to-Other-Languages.txt)
+[Introduction to Other Languages](./Introduction-to-Other-Languages.md)
 
 ---
 
