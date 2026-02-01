@@ -4,8 +4,8 @@
 ![Views](https://komarev.com/ghpvc/?username=llap4585&repo=T5-Refiner-DomainFocus&label=Project%20Views&color=blue&style=flat-square)
 
 ---
-<a name="Introduction"></a>：
-
+<a name="Introduction"></a>
+## Introduction
 [⭐️English](#english) | [⭐️中文](#chinese)
 
 
