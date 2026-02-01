@@ -2,11 +2,12 @@ Introduction to Other Languages
 One-time machine translation only, provided according to the version as of February 1, 2026
 One-time machine translation only, provided according to the version as of February 1, 2026
 
-(Arabic العربية, Bengali বাংলা, Russian русский, Italian italiano, Dutch Nederlands, Swedish svenska)
+([Arabic](#Arabic) العربية, Bengali বাংলা, Russian русский, Italian italiano, Dutch Nederlands, Swedish svenska)
 
 <div dir="rtl">
 
 ```arabic
+<a name="Arabic"></a>
 اللغة العربية:
 
 يهدف **T5-Refiner-DomainFocus** إلى إكساب النموذج ما يمكن تسميته بـ **«المرونة الدلالية»** من خلال تحسين الاستراتيجيات في مرحلة ما قبل التدريب، بحيث يصبح أكثر قدرة على التعامل بثبات مع النصوص المتضررة وإدماج المعرفة التخصصية الخاصة بالمجال.
