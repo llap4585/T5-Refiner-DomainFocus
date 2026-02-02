@@ -3,6 +3,8 @@
 
 ![Views](https://komarev.com/ghpvc/?username=llap4585&repo=T5-Refiner-DomainFocus&label=Project%20Views&color=blue&style=flat-square)
 
+If you like this project, give it a ⭐️ on GitHub!
+Your support keeps the project going and motivates me to improve it. 😄
 ---
 <a name="Introduction"></a>
 ## Introduction
