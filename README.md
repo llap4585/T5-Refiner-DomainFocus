@@ -706,4 +706,6 @@ If you use this project, please cite it as:
 [Introduction](#Introduction)
 
 ---
-> **⚠️Disclaimer:** The non-English and non-Chinese versions of this documentation are provided for convenience only and were generated using machine translation. README may have been revised multiple times, and non-Chinese content may be missing. In case of any discrepancy, the Chinese version shall prevail. 
+> **⚠️Disclaimer:** The non-English and non-Chinese versions of this documentation are provided for convenience only and were generated using machine translation. README may have been revised multiple times, and non-Chinese content may be missing. In case of any discrepancy, the Chinese version shall prevail.
+---
+> 后记：不得不吐槽一下BART这玩意，开始看了半天还以为效果很好呢，结果我训练都跑了才发现这玩意只有单字能力，缺口到底有几个字怎么可能知道，真坑。最后整个项目换到T5真耽误时间。
